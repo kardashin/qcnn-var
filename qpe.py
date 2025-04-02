@@ -26,6 +26,16 @@ I = np.array([[1.,0.],
 
 # some functions # 
 
+def fkron(A, B):
+    """ A faster (?) kronecker product. Taken from https://stackoverflow.com/a/56067827 """
+    s = len(A)*len(B)
+    return (A[:, None, :, None]*B[None, :, None, :]).reshape(s, s)
+
+def fkron_diag(A, B):
+    """ A faster (?) kronecker product for vectors. Taken from https://stackoverflow.com/a/56067827 """
+    s = len(A)*len(B)
+    return (A[:, None]*B[None, :]).reshape(s)
+
 def kron_A_N(A, N): # fast kron(A, eye(N))
     m,n = A.shape
     out = zeros((m, N, n, N), dtype=A.dtype)
@@ -418,7 +428,7 @@ def schwinger_ham(N, m, w=1, g=1, e0=0):
     sm = (X - 1j*Y)/2
     term_1 = zeros([d, d], dtype=complex)
     for j in range(N - 1):
-        op = reduce(kron, [I]*j + [sp, sm] + [I]*(N - j - 2))
+        op = reduce(kron, [I]*j + [sp, sm] + [I]*(N - j - 2)) # optimizable
         term_1 += op + op.conj().T
     term_2 = zeros([d, d], dtype=complex)
     for j in range(N):
